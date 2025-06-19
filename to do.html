@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart To-Do List App</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- ✅ ADDED Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+    body {
+      background: linear-gradient(to right, #fbc2eb, #a6c1ee);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+    }
+    .app {
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+      max-width: 1200px;
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      padding: 20px;
+      gap: 20px;
+    }
+    .section {
+      flex: 1;
+      min-width: 280px;
+      padding: 20px;
+      border-radius: 15px;
+      background: linear-gradient(to top left, #ffecd2, #fcb69f);
+      color: #333;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+    }
+    .section h2, .section h3 {
+      font-size: 22px;
+      margin-bottom: 15px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 5px;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      background: #fff8f0;
+    }
+    .category-select {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .category-select div {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      background: #ffdde1;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      font-weight: bold;
+    }
+    .category-select div:hover {
+      background: #ffd1dc;
+    }
+    .task-list {
+      margin-top: 20px;
+    }
+    .task-item {
+      background: #fff3f3;
+      padding: 15px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      border-left: 5px solid #ff8c94;
+    }
+    .task-item .info {
+      flex-grow: 1;
+    }
+    .task-item button {
+      padding: 8px 12px;
+      border: none;
+      background: #ff6f61;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      align-self: flex-end;
+      margin-top: 10px;
+    }
+    .heart {
+      display: none;
+      font-size: 24px;
+      color: red;
+      margin-left: 10px;
+      animation: pop 0.4s ease;
+    }
+    @keyframes pop {
+      0% { transform: scale(0); }
+      100% { transform: scale(1.2); }
+    }
+    .stats {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .stats div {
+      flex: 1;
+      background: linear-gradient(to right, #f6d365, #fda085);
+      padding: 15px;
+      border-radius: 12px;
+      text-align: center;
+      font-weight: bold;
+      color: #fff;
+    }
+    .chart-section {
+      background: #fff8f0;
+      border-radius: 15px;
+      padding: 15px;
+      margin-top: 20px;
+    }
+    .chart-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .chart-tabs button {
+      flex: 1;
+      padding: 8px;
+      border-radius: 8px;
+      border: none;
+      background: #fbc2eb;
+      color: #333;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .chart-tabs .active {
+      background: #a18cd1;
+      color: #fff;
+    }
+    .chart-placeholder {
+      height: 140px;
+      background: #fff0f0;
+      border-radius: 12px;
+    }
+    .add-task-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    #addTaskBtn {
+      background: #00bfa6;
+      color: #fff;
+      border: none;
+      padding: 8px 12px;
+      font-size: 13px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.3s ease;
+    }
+    #addTaskBtn:hover {
+      background: #009e88;
+    }
+    .remaining-time {
+      font-size: 12px;
+      margin-top: 5px;
+      color: #444;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="section">
+      <h2>Add Task</h2>
+      <div class="form-group">
+        <label>Task</label>
+        <div class="add-task-row">
+          <input type="text" id="taskInput" placeholder="Enter task">
+          <button id="addTaskBtn">➕ Add</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Due Date</label>
+        <input type="datetime-local" id="dueDate">
+      </div>
+      <div class="form-group">
+        <label>Set Alarm?</label>
+        <select id="alarmSelect">
+          <option value="no">No</option>
+          <option value="yes">Yes</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Category</label>
+        <div class="category-select" id="categorySelect">
+          <div data-category="Work">💼 Work</div>
+          <div data-category="Sport">⚽ Sport</div>
+          <div data-category="Study">📚 Study</div>
+          <div data-category="Self-care">💆 Self-care</div>
+        </div>
+        <input type="hidden" id="selectedCategory">
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Your Tasks</h2>
+      <div class="task-list" id="taskList"></div>
+      <div id="alarmInfo" style="margin-top: 15px; font-weight: bold; color: #555;"></div>
+    </div>
+
+    <div class="section">
+      <h2>Stats</h2>
+      <div class="stats">
+        <div id="statWork">💼 Work<br>0 Tasks</div>
+        <div id="statSport">⚽ Sport<br>0 Tasks</div>
+        <div id="statStudy">📚 Study<br>0 Tasks</div>
+        <div id="statSelf-care">💆 Self-care<br>0 Tasks</div>
+      </div>
+      <div class="chart-section">
+        <h3>Performance</h3>
+        <div class="chart-tabs">
+          <button class="active">Day</button>
+          <button>Week</button>
+          <button>Month</button>
+          <button>Year</button>
+        </div>
+
+        <!-- ✅ REPLACED this: <div class="chart-placeholder"></div> -->
+        <canvas id="performanceChart" class="chart-placeholder"></canvas>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="to_do.js" defer></script>
+</body>
+</html>
